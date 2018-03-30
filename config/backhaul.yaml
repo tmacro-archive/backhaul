@@ -1,0 +1,11 @@
+---
+meta:
+    app: backhaul
+    version: alpha
+
+logging:
+    logfile: backhaul.log
+
+graphics:
+    resolution: 1366x768
+    fullscreen: True

@@ -1,0 +1,147 @@
+import yaml
+import sys
+import logging
+import os
+import os.path
+from collections import namedtuple
+from .error import NoConfigError, ConfigImportError, InvalidConfigError
+from datetime import datetime
+from pathlib import PosixPath
+
+# Config path load hiearchy
+LOAD_ORDER = [
+	os.environ.get('BACKHAUL_CONF_DIR'),
+	'%s/.backhaul'%os.path.expanduser('~'),
+	'config/',
+	'.'
+]
+
+LOAD_ORDER = [PosixPath(p) for p in LOAD_ORDER if p] 
+
+# These can be overridden in the config file.
+# They are just here some sensible defaults
+# so the module shill functions
+BUILT_IN_DEFAULTS = {
+			'meta':{
+				"version": "dev_build",
+				"app" : "macrup",
+				},
+			'logging': {
+				"logfile" : None,
+				"loglvl" : "debug",
+				"log_rotation": False,
+				"logfmt" : '%(asctime)s %(name)s %(levelname)s: %(message)s',
+				"datefmt" : '%d.%m.%y %I:%M:%S %p',
+				'whitelist': [],
+				'blacklist': []
+				},
+			'_dump': True	# If True and the loaded config is empty
+}							# 	Write out BUILT_IN_DEFAULTS and APP_DEFAULTS to the config after merging
+							# Keys prefaced with a '_' will not be written
+
+# Intert default values for app config here
+# instead of mixing them with BUILT_IN_DEFAULTS
+# These can be use to override BUILT_IN_DEFAULTS as well
+APP_DEFAULTS = {
+}
+
+BUILT_IN_DEFAULTS.update(APP_DEFAULTS)
+
+def parseLogLevel(text, default = 30):
+	text = text.lower()
+	levelValues = dict(
+				critical = logging.CRITICAL,
+				error = logging.ERROR,
+				warning = logging.WARNING,
+				info = logging.INFO,
+				debug = logging.DEBUG
+				)
+	return levelValues.get(text, default)
+
+def recursivelyUpdateDict(orig, new):
+	updated = orig.copy()
+	updateFrom = new.copy()
+	for key, value in updated.items():
+		if key in new:
+			if not isinstance(value, dict):
+				updated[key] = updateFrom.pop(key)
+			else:
+				updated[key] = recursivelyUpdateDict(value, updateFrom.pop(key))
+	for key, value in updateFrom.items():
+		updated[key] = value
+	return updated
+
+def createNamespace(mapping, name = 'config'):
+	data = {}
+	for key, value in mapping.items():
+		if not isinstance(value, dict):
+			data[key] = value
+		else:
+			data[key] = createNamespace(value, key)
+	nt = namedtuple(name, list(data.keys()))
+	return nt(**data)
+
+def lookForFile(path):
+	'''
+	Tries to smartly find the absolute path of a config file.
+	If the given path is absolute and exists return it unmodified, otherwise do usual leaf based lookup
+	If the given path contains only a file name check for existence in LOAD_ORDER dirs returning if found
+	if the given path contains a relative filepath check for existence in LOAD_ORDER joining each with the fragement
+	'''
+	path = PosixPath(path)
+	if path.is_absolute() and path.exists():
+		return path
+
+	for confDir in LOAD_ORDER:
+		print(confDir.joinpath(path).resolve())
+		if confDir.joinpath(path).exists():
+			return confDir.joinpath(path).resolve()
+	return None
+
+
+
+
+
+def loadYAML(path):
+	path = lookForFile(path)
+	if not path:
+		raise NoConfigError
+	try:
+		with open(path) as configFile:
+			return yaml.load(configFile)
+	except Exception as e:
+		raise InvalidConfigError
+	return None
+
+def loadImports(mapping):
+	loaded = mapping.copy()
+	parsed = {}
+	for key, value in loaded.items():
+		if isinstance(value, str):
+			if value.split('.')[-1] == 'yaml' and lookForFile(value) is not None :
+				parsed[key] = loadImports(loadYAML(value))
+			else:
+				parsed[key] = value
+		elif isinstance(value, dict):
+			parsed[key] = loadImports(value)
+		else:
+			parsed[key] = value
+	return parsed
+
+def loadConfig(path = None):
+	defaults = {k: v for k, v in BUILT_IN_DEFAULTS.items() if not k[0] == '_'}
+	loadedConfig = loadYAML(path) if path is not None else {}
+	if loadedConfig:
+		loadedConfig = loadImports(loadedConfig)
+	if loadedConfig is None and BUILT_IN_DEFAULTS['_dump'] and path:
+		loadedConfig = {}
+		with open(path, 'w') as cf:
+			yaml.dump(defaults, cf, default_flow_style=False)
+	config = recursivelyUpdateDict(defaults, loadedConfig)
+	config['logging']['loglvl'] = parseLogLevel(config['logging']['loglvl']) # Parse the loglvl
+	return createNamespace(config) # Return the config for good measure
+
+
+
+config_path = 'backhaul.yaml'
+config = loadConfig(config_path)
