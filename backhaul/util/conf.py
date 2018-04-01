@@ -33,7 +33,8 @@ BUILT_IN_DEFAULTS = {
 				"logfmt" : '%(asctime)s %(name)s %(levelname)s: %(message)s',
 				"datefmt" : '%d.%m.%y %I:%M:%S %p',
 				'whitelist': [],
-				'blacklist': []
+				'blacklist': [],
+				'debug': False
 				},
 			'_dump': True	# If True and the loaded config is empty
 }							# 	Write out BUILT_IN_DEFAULTS and APP_DEFAULTS to the config after merging
@@ -86,21 +87,16 @@ def lookForFile(path):
 	Tries to smartly find the absolute path of a config file.
 	If the given path is absolute and exists return it unmodified, otherwise do usual leaf based lookup
 	If the given path contains only a file name check for existence in LOAD_ORDER dirs returning if found
-	if the given path contains a relative filepath check for existence in LOAD_ORDER joining each with the fragement
+	If the given path contains a relative filepath check for existence in LOAD_ORDER joining each with the fragement
 	'''
 	path = PosixPath(path)
 	if path.is_absolute() and path.exists():
 		return path
 
 	for confDir in LOAD_ORDER:
-		print(confDir.joinpath(path).resolve())
 		if confDir.joinpath(path).exists():
 			return confDir.joinpath(path).resolve()
 	return None
-
-
-
-
 
 def loadYAML(path):
 	path = lookForFile(path)
@@ -139,6 +135,8 @@ def loadConfig(path = None):
 			yaml.dump(defaults, cf, default_flow_style=False)
 	config = recursivelyUpdateDict(defaults, loadedConfig)
 	config['logging']['loglvl'] = parseLogLevel(config['logging']['loglvl']) # Parse the loglvl
+	if config['logging']['loglvl'] == logging.DEBUG:
+		config['logging']['debug'] = True
 	return createNamespace(config) # Return the config for good measure
 
 
