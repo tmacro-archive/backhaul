@@ -9,3 +9,7 @@ logging:
 graphics:
     resolution: 1366x768
     fullscreen: True
+
+assets:
+    - assets
+    - assets/tiles
