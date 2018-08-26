@@ -13,3 +13,5 @@ graphics:
 assets:
     - assets
     - assets/tiles
+tileHeight: 27
+tileWidth: 62
