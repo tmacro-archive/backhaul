@@ -1,21 +1,37 @@
 from collections import OrderedDict
 import pyglet
 from ...util.error import BackhaulError
+from ...types.ui import Sprite
+from ...constants import SpriteFrames
+from pathlib import PosixPath
+from ...util.conf import config
 
 LOADED_TERRAIN = OrderedDict()
 
 def add_terrain(cls):
-    key = cls.__terrain_id__
-    if key in LOADED_TERRAIN:
-        raise BackhaulError('Terrain id %s already exists!'%key)
-    tex_path = cls.__texture_path__
-    if tex_path is None:
-        raise BackhaulError('Terrain %s defines no texture!'%key)
-    tex = resolve_texture(tex_path)
-    cls.texture = tex if tex else None
-    LOADED_TERRAIN[key] = cls
-    return cls
+	key = cls.__terrain_id__
+	if key in LOADED_TERRAIN:
+		raise BackhaulError('Terrain id %s already exists!'%key)
+	base_name = cls.__base_texture_path__
+	if base_name is None:
+		if key == 'AIR':
+			LOADED_TERRAIN[key] = cls
+			return cls
+		raise BackhaulError('Terrain %s defines no texture!'%key)
+
+	textures = []
+	for frame in SpriteFrames:
+		name = '%s-%s.%s'%(base_name, frame.value, cls.__texture_extension__)
+		texture = pyglet.resource.image(name)
+		textures.append(texture)
+	cls.texture = Sprite(*textures)
+	LOADED_TERRAIN[key] = cls
+	return cls
 
 
-def resolve_texture(path):
-    return pyglet.resource.image(path)
+
+
+
+def get_terrain(id):
+	print(LOADED_TERRAIN)
+	return LOADED_TERRAIN.get(id)

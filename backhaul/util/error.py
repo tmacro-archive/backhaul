@@ -21,3 +21,19 @@ class NoConfigError(ConfigError):
 
 class ConfigImportError(ConfigError):
 	'''Error locating a child config file'''
+
+
+class ObjectError(BackhaulError):
+	'''Base exception for all object related errors'''
+
+class ObjectConstructionError(ObjectError):
+	'''Base exception for all launch time object construction errors'''
+
+class DuplicatePropertyError(ObjectConstructionError):
+	'''A property key has been registered more than once, or a esisting key is being overwritten'''
+
+class PropertyOverwriteError(ObjectError):
+	'''A property is being overwrttien without an explicit overwrite = True'''
+
+class InvalidPositionError(ObjectError):
+	pass

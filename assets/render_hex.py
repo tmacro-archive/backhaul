@@ -18,7 +18,7 @@ def remove_lamp():
 def get_camera():
 	return bpy.data.cameras['Camera']\
 
-def setup_camera(camera, tx = 5.0, ty = 0.0, tz = 3.9, 
+def setup_camera(camera, tx = 5.0, ty = 0.0, tz = 3.9,
 					rx = 60.0, ry = 0.0, rz = 90.0, fov = 50.0):
 	camera.data.type = 'ORTHO'
 	camera.data.ortho_scale = 4.3
@@ -52,8 +52,8 @@ def setup_light():
 def makeMaterial(name, diffuse, specular, alpha):
 	mat = bpy.data.materials.new(name)
 	mat.diffuse_color = diffuse
-	mat.diffuse_shader = 'LAMBERT' 
-	mat.diffuse_intensity = 1.0 
+	mat.diffuse_shader = 'LAMBERT'
+	mat.diffuse_intensity = 1.0
 	mat.specular_color = specular
 	mat.specular_shader = 'COOKTORR'
 	mat.specular_intensity = 0.5
@@ -68,13 +68,13 @@ def makeMaterial(name, diffuse, specular, alpha):
 	# mtex = mat.texture_slots.add()
 	# mtex.texture = cTex
 	return mat
- 
+
 def setMaterial(ob, mat):
 	me = ob.data
 	me.materials.append(mat)
 
 def create_hex(r, g, b):
-	bpy.ops.mesh.primitive_circle_add(vertices=6, radius=2.1, fill_type='NGON', 
+	bpy.ops.mesh.primitive_circle_add(vertices=6, radius=2.1, fill_type='NGON',
 										location=(0, 0, 0), rotation=(0, 0, 0))
 
 	ob = bpy.context.object
@@ -84,9 +84,9 @@ def create_hex(r, g, b):
 	bm.from_mesh(me)
 	faces = bm.faces[:]
 
-	for face in faces:
-		q = bmesh.ops.extrude_discrete_faces(bm, faces=[face])
-		bmesh.ops.translate(bm, vec=Vector((0,0,2.1)), verts=q['faces'][0].verts)
+	# for face in faces:
+	# 	q = bmesh.ops.extrude_discrete_faces(bm, faces=[face])
+	# 	bmesh.ops.translate(bm, vec=Vector((0,0,2.1)), verts=q['faces'][0].verts)
 
 	bm.to_mesh(me)
 	me.update()
@@ -95,7 +95,7 @@ def create_hex(r, g, b):
 
 def render_tile():
 	scene = bpy.context.scene
-	fp = '/home/tmac/proj/public/backhaul/assets/' # get existing output path
+	fp = '/home/tmac/projects/public/backhaul/assets/' # get existing output path
 	scene.render.image_settings.file_format = 'PNG' # set output format to .png
 
 	scene.frame_set(0)
@@ -110,23 +110,23 @@ def render_tile():
 def autocrop_image(image, border = 0):
 	# Get the bounding box
 	bbox = image.getbbox()
- 
+
 	# Crop the image to the contents of the bounding box
 	image = image.crop(bbox)
- 
+
 	# Determine the width and height of the cropped image
 	(width, height) = image.size
- 
+
 	# Add border
 	width += border * 2
 	height += border * 2
- 
+
 	# Create a new image object for the output image
 	cropped_image = Image.new("RGBA", (width, height), (0,0,0,0))
- 
+
 	# Paste the cropped image onto the new image
 	cropped_image.paste(image, (border, border))
- 
+
 	# Done!
 	return cropped_image
 
@@ -158,6 +158,6 @@ create_hex(74, 50, 29)
 # me = ob.data
 # me.materials.append(mat)
 render_tile()
-image = Image.open('/home/tmac/proj/public/backhaul/assets/tile.png')
+image = Image.open('/home/tmac/projects/public/backhaul/assets/tile.png')
 image = autocrop_image(image, border = -1)
-image.save('/home/tmac/proj/public/backhaul/assets/tile.png')
+image.save('/home/tmac/projects/public/backhaul/assets/tile.png')

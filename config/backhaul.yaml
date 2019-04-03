@@ -1,17 +1,19 @@
 ---
-meta:
-    app: backhaul
-    version: alpha
-
 logging:
-    logfile: backhaul.log
+  logfile: backhaul.log
 
 graphics:
-    resolution: 1366x768
-    fullscreen: True
+  resolution: 1920x1080
+  fullscreen: false
+  chunk:
+    radius: 10
 
 assets:
-    - assets
-    - assets/tiles
-tileHeight: 27
-tileWidth: 62
+  base: /home/tmac/projects/public/backhaul/assets
+  tiles: tiles/
+  fonts: fonts/
+  ui: ui/
+
+tile:
+  width: 32
+  height: 16
