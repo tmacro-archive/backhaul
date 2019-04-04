@@ -4,6 +4,7 @@ from collections import OrderedDict
 from itertools import chain
 from ..util.error import DuplicatePropertyError, PropertyOverwriteError, InvalidPositionError
 from hexc import AbstractHex
+
 class BaseObject:
 
 	__obj_type__ = 'base'

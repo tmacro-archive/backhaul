@@ -6,6 +6,7 @@ from ...util.iter import iter_cube
 from ...types.grid import Point
 from ..constants import GridDirections, SpriteFrames, CardinalDirection
 from ..map import terrain
+import autoprop
 
 _log = Log('ui.components.map')
 
@@ -16,16 +17,17 @@ class Tile(pyglet.sprite.Sprite):
 		image.anchor_x = image.width - anchor.x
 		image.anchor_y = image.height - anchor.y
 
+@autoprop
 class Map(glooey.Widget):
 	custom_tile_size = None
 
-	def __init__(self, map):
+	def __init__(self, map = None):
         super().__init__()
 		self.__sprites = None
 		self.__buffer = None
 		self.__tile_size = Point(*custom_default_tile_size)
 		self.__map = map
-		self.__has_changed = True
+		self.__has_changed = map is not
 
 	@property
 	def _widget_size(self):
@@ -57,9 +59,16 @@ class Map(glooey.Widget):
 				)
 				break # Only the top visible tile is shown for now
 
-	def _get_from_map(self, map, position):
-		_position = self._tile_offset + position
-		return self.map.get(_position)
+	def get_map(self):
+		return self.__map
+
+	def set_map(self, value):
+		self.__map = value
+
+	def _get_from_map(self, position):
+		if self.map is not None:
+			_position = self._tile_offset + position
+			return self.map.get(_position)
 
 	@property
 	def _visible_faces(self):
