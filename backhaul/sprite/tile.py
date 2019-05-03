@@ -101,16 +101,21 @@ TILE_FRAMES = {
 }
 
 
-def draw_tile(name, color, height, scale, output, outline=None):
+def draw_tile(name, color, height, scale, output, outline=None, do_offset=False):
 	width = height * 2
 	s = Tile(height, (0,0), color.rgba, outline=outline)
 	for frame_name, frame in TILE_FRAMES.items():
 		sides, size, offset = frame
-		c_width = ceil( width * size[0] )
-		c_height = ceil( height * size[1] )
-		c_offset_x = ceil( width * offset[0] )
-		c_offset_y = ceil( height * offset[1])
-
+		if do_offset:
+			c_width = ceil( width * size[0] )
+			c_height = ceil( height * size[1] )
+			c_offset_x = ceil( width * offset[0] )
+			c_offset_y = ceil( height * offset[1])
+		else:
+			c_width = width
+			c_height = height * 2
+			c_offset_x = 0
+			c_offset_y = 0
 		image = Canvas((c_width, c_height), scale, (c_offset_x, c_offset_y))
 		s.draw(image, **sides)
 		image_path = output / PosixPath(f'{name}-{frame_name}.png')

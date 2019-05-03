@@ -1,6 +1,7 @@
 ---
 logging:
   logfile: backhaul.log
+  loglvl: debug
 
 graphics:
   resolution: 1920x1080

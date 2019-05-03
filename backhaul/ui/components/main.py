@@ -10,18 +10,3 @@ class TitleText(Text):
 	# custom_top_padding = 20
 	custom_left_padding = 12
 	custom_bottom_padding = 50
-
-
-
-# class TitleFrame(Box):
-# 	custom_bottom_padding = 0
-# 	custom_top_padding = 0
-
-# If we want another kind of text, for example a bigger font for section
-# titles, we just have to derive another class:
-
-# class MyTitle(glooey.Label):
-#     custom_color = '#eeeeec'
-#     custom_font_size = 12
-#     custom_alignment = 'center'
-#     custom_bold = True

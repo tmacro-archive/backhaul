@@ -174,8 +174,8 @@ class MapView(Component):
 			(point.x - point.y) * (self._tile_size.x // 2) + (self._size.x // 2),
 			(point.x + point.y) * (self._tile_size.y // 2) + (self._size.y // 2)
 		)
-		# print ('%s -> %s'%(point, pt))
-		return pt
+		z_height_adjust = point.z * self._tile_size.y
+		return pt + Point(0, z_height_adjust, 0)
 
 	def _draw_debug_point(self, point):
 		center = self._project(point)

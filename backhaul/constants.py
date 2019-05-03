@@ -23,3 +23,20 @@ class SpriteFrames(Enum):
 	TOPLEFT = 'topleft'
 	TOPRIGHT = 'topright'
 	FULL = 'full'
+
+class UIScenes(Enum):
+	MAINMENU = 'MAIN'
+	NEWGAME = 'NEW'
+	LOADING = 'LOAD'
+	GAMEHUD = 'GAME'
+
+# Tuple indicates in which direction sprites have been "packed"
+# These require a offset anchor
+class TileAnchors(Enum):
+	TOP = (False, False)
+	LEFT = (False, True)
+	RIGHT =(True, True)
+	LEFTRIGHT = (False, True)
+	TOPLEFT = (False, False)
+	TOPRIGHT = (False, False)
+	FULL = (False, False)

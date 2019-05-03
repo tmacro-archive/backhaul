@@ -27,7 +27,7 @@ BUILTIN_DEFAULTS = {
 	},
 	'logging': {
 		"logfile" : None,
-		"loglvl" : "info",
+		"loglvl" : "debug",
 		"log_rotation": False,
 		"logfmt" : '%(asctime)s %(name)s %(levelname)s: %(message)s',
 		"datefmt" : '%d-%m-%y %I:%M:%S %p',

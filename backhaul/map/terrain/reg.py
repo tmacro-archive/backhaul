@@ -8,6 +8,11 @@ from ...util.conf import config
 
 LOADED_TERRAIN = OrderedDict()
 
+def load_texture(base, frame, ext):
+	name = '%s-%s.%s'%(base_name, frame, ext)
+	texture = pyglet.resource.image(name)
+
+
 def add_terrain(cls):
 	key = cls.__terrain_id__
 	if key in LOADED_TERRAIN:

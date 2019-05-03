@@ -1,5 +1,5 @@
 from .scenes import LOADED_SCENES
 from .base import UI
+from ..constants import UIScenes
 
-
-BackhaulUI = UI('MAIN_MENU', LOADED_SCENES)
+BackhaulUI = UI(UIScenes.MAINMENU, LOADED_SCENES)

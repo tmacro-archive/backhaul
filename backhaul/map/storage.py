@@ -101,7 +101,8 @@ class BaseChunkLoader:
 		return '{p.x:+}:{p.y:+}:{p.z:+}'.format(p=position)
 
 	def _chunk_lookup(self, position):
-		return self._hash(div_point(position, self._chunk_radius))
+		_hash = self._hash(div_point(position, self._chunk_radius))
+		return  _hash
 
 	@property
 	def position(self):

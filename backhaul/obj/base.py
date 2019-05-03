@@ -1,92 +1,127 @@
-aimport uuid
+import inspect, re
+from collections import defaultdict
+from functools import partialmethod
 
-from collections import OrderedDict
-from itertools import chain
-from ..util.error import DuplicatePropertyError, PropertyOverwriteError, InvalidPositionError
-from hexc import AbstractHex
+# Subclasses will set an attribute in the format _attr_{name}
+# A property with correctly mapped getters/setters with be created on the class
+# If no get/set are found no property is created
+# Two class attributes will be set based upon getters/setters found during add
+# _attr__get
+# _attr__set
 
-class BaseObject:
+BASE_ATTR_TMPL = '_attr_%s '
+BASE_ATTR_GET_TMPL = '_attr__%s__get'
+BASE_ATTR_SET_TMPL = '_attr__%s__set'
+BASE_ATTR_IDX_TMPL = '_attr__%s__idx'
+BASE_ATTR_MAP_TMPL = '_attr__%s__map'
 
-	__obj_type__ = 'base'
-
-	def __init__(self):
-		self.__uuid = uuid.uuid4().hex
-
-	@property
-	def id(self):
-		return '%s-%s'%(self.__obj_type__, self.__uuid)
-
-	def _repr(self, args):
-		return ', '.join('%s:%s'%kv for kv in args)
-
-	def _repr_add(self, current, added):
-		if current:
-			return chain((current, added))
-		return added
-
-	def __repr__(self):
-		added = self._repr()
-		return '<%s id:%s%s>'%(self.__class__.__name__, self.id, ' ' + added if added else '')
+OBJECT_TYPES = {}
 
 
-class PropertyMixin:
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-		self.__properties = OrderedDict()
+class BaseEntity:
 
-	def _repr(self, *args):
-		props = tuple((k,v) for k,v in self.__properties.items())
-		return super()._repr(self._repr_add(args, props))
+	def __init__(*args, **kwargs):
+		self.__attrs = dict()
 
-	def _register_property(self, key, default = None):
-		if key in self.__properties:
-			raise DuplicatePropertyError
-		self.__properties[key] = default
+	def _has_attr(self, name):
+		return hasattr(self, BASE_ATTR_TMPL.format(name=name))
 
-	@property
-	def properties(self):
-		for k, v in self.__properties.items():
-			yield k, v
+	def _can_get_attr(self, name):
+		return hasattr(self, BASE_ATTR_GET_TMPL.format(name=name))
 
-	def set_prop(self, key, value, overwrite = True):
-		return self._set_property(key, value, overwrite=overwrite)
+	def _can_set_attr(self, name):
+		return hasattr(self, BASE_ATTR_SET_TMPL.format(name=name))
 
-	def get_prop(self, key, default = None):
-		return self._get_property(key, default)
+	def _get_attr_(self, name, default=None):
+		return self.__attrs.get(name, default)
 
-	def has_prop(self, key);
-		return self._has_property(key)
+	def _set_attr(self, name, value):
+		self.__attrs[name] = value
 
-	def _get_property(self, key, default = None):
-		return self.__properties.get(key, default)
+class BaseMixin:
+	can_get = False # {bool} whether the create a getter
+	can_set = False # {bool} whether the create a setter
 
-	def _set_property(self, key, value, overwrite = True):
-		if not overwrite and key in self.__properties:
-			raise PropertyOverwriteError
-		self.__properties[key] = value
-
-	def _has_property(self, key):
-		return key in self.__properties
+	index = False # Whether to maintain a list of objects with this attr
+	named = False # Maintain a mapping of all objects, keyed with this attributes value. Implies _index
 
 
-class PositionMixin:
-	def __init__(self, *args **kwargs):
-		super().__init__(*args, **kwargs)
-		self.__position = None
+def mixin(cls):
+	_property = type('property', (property,), {})
+	if not hasattr(cls, '__class__'):
+		raise TypeError('@mixin can only be used with new-style classes')
 
-	def _set_position(self, pos):
-		self.__position = pos
+	accessors = defaultdict(dict)
+	expected_num_args = {'get': 0, 'set': 1, 'del': 0}
+	rewrite_fmt = {
+		'get': '_get_attr_%s',
+		'set': '_set_attr_%s',
+		'del': '_del_attr_%s',
+	}
 
-	def _get_position(self):
-		return self.__position
+	# The accessors we're searching for are considered methods in python2
+	# and functions in python3.  They behave the same either way.
+	ismethod = lambda x: inspect.ismethod(x) or inspect.isfunction(x)
 
-	def set_position(self, pos = None, q = None, r = None, s = None):
-		if pos is None and (q is None or r is None or s is None):
-			raise InvalidPositionError
-		if pos is not None:
-			self._set_position(pos)
-		else:
-			self._set_position(AbstractHex(q, r, s))
+	for method_name, method in inspect.getmembers(cls, ismethod):
+		accessor_match = re.match('(get|set|del)_(.+)', method_name)
+		if not accessor_match:
+			continue
 
-	def get_pos(self):
-		return self._get_position()
+		# Suppress a warning by using getfullargspec() if it's available
+		# and getargspec() if it's not.
+		try: from inspect import getfullargspec as getargspec
+		except ImportError: from inspect import getargspec
+
+		prefix, name = accessor_match.groups()
+		arg_spec = getargspec(method)
+		num_args = len(arg_spec.args) - len(arg_spec.defaults or ())
+		num_args_minus_self = num_args - 1
+
+		if num_args_minus_self != expected_num_args[prefix]:
+			continue
+
+		accessors[name][prefix] = method
+
+	for name in accessors:
+		# Auto create setters and getters if told to
+		if getattr(cls, 'can_get', False) and 'get' not in accessors[name]:
+			def _getter(self, attr):
+				return self._get_attr_(attr)
+			_get_mthd = partialmethod(_getter, name)
+			setattr(cls, 'get_%s'%name, _get_mthd)
+			accessors[name]['get'] = _get_mthd
+			delattr(cls, 'can_get')
+
+		if getattr(cls, 'can_set', False) and 'set' not in accessors[name]:
+			def _setter(self, attr, value):
+				return self._set_attr_(attr, value)
+			_set_mthd = partialmethod(_setter, name)
+			setattr(cls, 'set_%s'%name, _set_mthd)
+			accessors[name]['set'] = _set_mthd
+			delattr(cls, 'can_set')
+
+		# Create our property
+		setattr(cls, name, _property(
+			accessors[name].get('get'),
+			accessors[name].get('set'),
+			accessors[name].get('del'),
+		))
+		# Rewrite function names to something that won't clash
+		for op, mthd in accessors[name].items():
+			setattr(cls, rewrite_fmt[op]%name, mthd) # Add new method
+			delattr(cls, '%s_%s'%(op, name)) # Remove old method
+
+		# Set flag for attr existence
+		setattr(cls, BASE_ATTR_TMPL%name, True)
+
+		# Set flags for set/get abilities
+		if accessors[name].get('get'): # If we can get
+			setattr(cls, BASE_ATTR_GET_TMPL%name, True)
+		if accessors[name].get('set'): # If we can set
+			setattr(cls, BASE_ATTR_SET_TMPL%name, True)
+
+		# Rewrite index/map flags
+		setattr(cls, BASE_ATTR_IDX_TMPL%name, getattr(cls, 'index', False))
+		setattr(cls, BASE_ATTR_MAP_TMPL%name, getattr(cls, 'named', False))
+	return cls

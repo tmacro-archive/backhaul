@@ -1,11 +1,11 @@
 import glooey
 
 class Scene:
-	@property
-	@classmethod
-	def container(cls):
-		return glooey.Bin()
+	@staticmethod
+	def handlers():
+		return {}
 
 	@classmethod
-	def build(cls):
+	def build(cls, ui):
 		pass
+  
