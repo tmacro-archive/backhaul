@@ -37,6 +37,8 @@ assets:
 clean:
 	$(V)rm -rf **/__pycache__ \
 		*.egg-info \
+		build \
+		dist \
 		backhaul.log
 .PHONY: clean
 
