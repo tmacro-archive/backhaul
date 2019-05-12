@@ -1,4 +1,4 @@
-from ..scene import Scene
+from .base import Scene
 from ._reg import scene
 from ..components.common import Text
 import glooey
@@ -46,11 +46,3 @@ class NewGame(Scene):
 	@staticmethod
 	def on_show(ui):
 		ui.emit('game:create')
-
-	# @classmethod
-	# def on_show(cls, ui):
-	# 	game_conf = WorldConfig.new()
-	# 	world = World(game_conf)
-	# 	world.build()
-	# 	game_scene = ui.get_scene('GAME')
-	# 	game_scene

@@ -1,4 +1,4 @@
-from ..scene import Scene
+from .base import Scene
 from ._reg import scene
 from ..components.map import Map, MapContainer
 from ...constants import UIScenes

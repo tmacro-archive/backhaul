@@ -1,5 +1,3 @@
-import glooey
-
 class Scene:
 	@staticmethod
 	def handlers():

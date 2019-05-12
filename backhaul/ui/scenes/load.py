@@ -3,8 +3,10 @@ from ._reg import scene
 from ..components.common import Text
 from ...constants import UIScenes
 from ...world.state import World
+from .base import Scene
+
 @scene
-class Loading:
+class Loading(Scene):
 	_id = UIScenes.LOADING
 
 	@classmethod

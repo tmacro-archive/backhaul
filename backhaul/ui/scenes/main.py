@@ -1,4 +1,4 @@
-from ..scene import Scene
+from .base import Scene
 from ..components.common import Button
 from ..components.main import TitleText
 import glooey

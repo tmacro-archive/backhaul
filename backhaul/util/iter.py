@@ -1,36 +1,5 @@
 from ..types.grid import Point
 
-# from collections import namedtuple
-# from functools import partialmethod
-# from math import floor
-
-# class Point(namedtuple('Point', 'x y z', defaults=[0])):
-# 	__slots__ = ()
-# 	def __add__(self, other):
-# 		return self._make((
-# 			self.x + other.x,
-# 			self.y + other.y,
-# 			self.z + other.z
-# 		))
-# 	def __sub__(self, other):
-# 		return self._make((
-# 			self.x - other.x,
-# 			self.y - other.y,
-# 			self.z - other.z
-# 		))
-# 	def __mul__(self, other):
-# 		return self._make((
-# 			floor(self.x * other.x),
-# 			floor(self.y * other.y),
-# 			floor(self.z * other.z)
-# 		))
-# 	def __floordiv__(self, other):
-# 		return self._make((
-# 			floor(self.x / other.x),
-# 			floor(self.y / other.y),
-# 			floor(self.z / other.z)
-#		))
-
 def smart_range(start, stop, reverse=False):
 	'''Correctly handles iterating over ranges in 
 	either direction including negative numbers'''
@@ -65,15 +34,3 @@ def iter_slice(size, center):
 	for x in range(start.x, end.x):
 		for y in range(start.y, end.y):
 			yield Point(x, y, center.z)
-
-# Iterate over the points contained within a a square of map,
-# after it has been isometrically projected 
-# def iter_slice_iso(size, center):
-
-
-def test_cube():
-	for p in iter_cube(Point(5,5,1), Point(0,0,1)):
-		print(p)
-
-
-# test_cube()
