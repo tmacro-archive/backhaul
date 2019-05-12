@@ -81,4 +81,7 @@ class UI(EventEmitter):
 	def show(self, resolution, fullscreen=False):
 		self._resolution = resolution
 		self._fullscreen = fullscreen
+		scene = self.get_scene()
+		if scene and hasattr(scene, 'on_show'):
+			scene.on_show(self)
 		return self.current_scene

@@ -2,11 +2,13 @@ import pyglet
 import glooey
 from ...util.log import Log
 from ...util.conf import config
-from ...util.iter import iter_cube
+from ...util.iter import iter_cube, smart_range, center_range
 from ...types.grid import Point
 from ...constants import GridDirections, SpriteFrames, CardinalDirection
 from ...map import terrain
 import autoprop
+import math
+import numpy
 
 _log = Log('ui.components.map')
 
@@ -36,7 +38,7 @@ class MapContainer(glooey.Stack):
 
 @autoprop
 class Map(glooey.Widget):
-	custom_default_tile_size = (32, 16, 16)
+	custom_default_tile_size = (16, 8, 8)
 
 	def __init__(self, map = None):
 		super().__init__()
@@ -55,9 +57,11 @@ class Map(glooey.Widget):
 	@property
 	def _buffer_size(self):
 		window_size = self.get_window().get_size()
+		print(window_size)
 		half_tile = self.__tile_size // Point(2, 2, 1)
 		wh = Point(*window_size) // half_tile
-		return Point(wh[0], wh[1], 128)
+		# return Point(11, 11, 10)
+		return Point(wh[0] - 1, wh[1], 10)
 
 	@property
 	def _buffer(self):
@@ -68,7 +72,8 @@ class Map(glooey.Widget):
 	def _build_buffer(self):
 		_log.debug('Building buffer of size %s, %s, %s'%self._buffer_size)
 		buffer = dict()
-		for point in iter_cube(self._buffer_size, Point(0,0,0)):
+		# for point in iter_cube(self._buffer_size, Point(0,0,0)):
+		for point in self._iter_screen():
 			# if point == Point(3,-2,0):
 			# 	continue
 			# if point.z > 0 and point != Point(-2,2,1) and point != Point(2,-2,1) and point != Point(-2,-2,1) and point != Point(2,2,1):
@@ -83,18 +88,37 @@ class Map(glooey.Widget):
 				)
 				# break # Only the top visible tile is shown for now
 		_log.debug('Done Building Buffer')
+		# print(len(buffer))
 		return buffer
 
 	def refresh_buffer(self):
 		self.__buffer = self._build_buffer()
 		self.__has_changed = True
 
+	# Iterates over the points that will appear on screen
+	def _iter_screen(self):
+		buffer_size = self._buffer_size
+		half_width = buffer_size.x // 4 # convert to full tile widths then center
+		half_height = buffer_size.y // 4
+		topleft = Point(-half_width, half_width) + Point(half_height, half_height)
+		print(topleft)
+		print(topleft + (buffer_size // Point(2, 2, 1)))
+		# topleft = self.rotate((0,0), topleft[:2], 45)
+		# print(topleft)
+		for z in smart_range(*center_range(buffer_size.z)):
+			for x in range(buffer_size.x // 2):
+				for y in range(buffer_size.y // 2):
+					yield topleft + Point(-x, -x, 0) + Point(y, -y, z)
+				for y in range(buffer_size.y // 2):
+					yield topleft + Point(-x-1, -x, 0) + Point(y, -y, z)
+
+
 
 	def get_map(self):
 		return self.__map
 
 	def set_map(self, value):
-		print(value)
+		# print(value)
 		self.__map = value
 
 	def _get_from_map(self, position):
@@ -148,25 +172,25 @@ class Map(glooey.Widget):
 			has_air[key] = self._get_from_map(direction.value + \
 											position) is terrain.id.AIR
 		if all(has_air.values()):
-			print(f'Chose FULL texture for {position}')
+			# print(f'Chose FULL texture for {position}')
 			return _terrain.texture.full
 		elif has_air['up']:
 			if has_air['left']:
-				print(f'Chose TOPLEFT texture for {position}')
+				# print(f'Chose TOPLEFT texture for {position}')
 				return _terrain.texture.topleft
 			if has_air['right']:
-				print(f'Chose TOPRIGHT texture for {position}')
+				# print(f'Chose TOPRIGHT texture for {position}')
 				return _terrain.texture.topright
-			print(f'Chose TOP texture for {position}')
+			# print(f'Chose TOP texture for {position}')
 			return _terrain.texture.top
 		elif has_air['left'] and has_air['right']:
-			print(f'Chose LEFTRIGHT texture for {position}')
+			# print(f'Chose LEFTRIGHT texture for {position}')
 			return _terrain.texture.leftright
 		elif has_air['left']:
-			print(f'Chose LEFT texture for {position}')
+			# print(f'Chose LEFT texture for {position}')
 			return _terrain.texture.left
 		elif has_air['right']:
-			print(f'Chose RIGHT texture for {position}')
+			# print(f'Chose RIGHT texture for {position}')
 			return _terrain.texture.right
 
 	def _iso_project(self, point):
@@ -176,8 +200,16 @@ class Map(glooey.Widget):
 		)
 		z_height_adjust = point.z * self.__tile_size.y
 		final = pt + Point(0, z_height_adjust, 0)
-		print ('%s -> %s'%(point, final))
+		# print ('%s -> %s'%(point, final))
 		return final
+
+	def _screen_to_map(self, point):
+		uncentered = point - (self._widget_size // Point(2,2,1))
+		return Point(
+			math.floor((uncentered.x / (self.__tile_size.x // 2) + self._widget_size.y / (self.__tile_size.y // 2)) / 2),
+			math.floor((uncentered.y / (self.__tile_size.y // 2) - (self._widget_size.x / (self.__tile_size.x // 2))) / 2),
+			0
+		)
 
 	@property
 	def _sprites(self):
@@ -194,7 +226,7 @@ class Map(glooey.Widget):
 			sprites[pos] = Tile(
 				*tile,
 				batch=self.get_batch(),
-				group=self._get_tile_group(sum(pos))
+				group=self._get_tile_group(pos.z)
 			)
 		return sprites
 
@@ -203,7 +235,7 @@ class Map(glooey.Widget):
 
 	# Return space needed by widget
 	def do_claim(self):
-		print(self._widget_size[:2])
+		# print(self._widget_size[:2])
 		return self._widget_size[:2]
 
 	# Called when attached to new group
@@ -233,9 +265,9 @@ class Map(glooey.Widget):
 	def do_draw(self):
 		if self.__has_changed:
 			_log.debug('Drawing Map')
-			self._draw_debug()
-			for sprite in self._sprites:
-				continue # Do some stuff in the future
+			self._sprites
+			# for sprite in self._sprites:
+			# 	continue # Do some stuff in the future
 			self.__has_changed = False
 			
 

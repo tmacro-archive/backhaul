@@ -43,6 +43,10 @@ class NewGame(Scene):
 		game_conf = WorldConfig.new()
 		ui.emit('map:create', game_conf)
 
+	@staticmethod
+	def on_show(ui):
+		ui.emit('game:create')
+
 	# @classmethod
 	# def on_show(cls, ui):
 	# 	game_conf = WorldConfig.new()
