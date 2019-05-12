@@ -1,6 +1,5 @@
 from ..util.conf import create_namespace, recurse_update
 from ..types.grid import Point
-from ..map.storage import MemMap
 from ..map.generate import generate_base
 
 class WorldConfig:

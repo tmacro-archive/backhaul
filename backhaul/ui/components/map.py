@@ -8,7 +8,6 @@ from ...constants import GridDirections, SpriteFrames, CardinalDirection
 from ...map import terrain
 import autoprop
 import math
-import numpy
 
 _log = Log('ui.components.map')
 

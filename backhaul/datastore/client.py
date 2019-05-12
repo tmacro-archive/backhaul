@@ -52,7 +52,7 @@ class DatastoreClient:
 
 class BackhaulDatastore:
     def __init__(self):
-        self._save_dir = PosiPath(config.data.saved_games).resolve()
+        self._save_dir = PosixPath(config.data.saved_games).resolve()
 
     def _get_path(self, name):
         return self._save_dir / name.lower()
