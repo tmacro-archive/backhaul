@@ -24,9 +24,9 @@ def generate_base(map):
 	start = Point(start_x, start_y, start_z)
 	fill_cube(map, map.size, terrain.id.AIR, center=Point(0,0,0))
 
-	fill_cube(map, Point(101, 101, 1), terrain.id.GRASS, center=Point(0, 0, 0))
-	# fill_cube(map, Point(15, 15, 1), terrain.id.GRASS, center=Point(0, 0, 0))
-	# fill_cube(map, Point(5, 5, 1), terrain.id.STONE, center=Point(0, 0, 1))
+	fill_cube(map, Point(150, 150, 1), terrain.id.GRASS, center=Point(0, 0, 0))
+	# fill_cube(map, Point(25, 25, 1), terrain.id.GRASS, center=Point(0, 0, 0))
+	fill_cube(map, Point(5, 5, 1), terrain.id.STONE, center=Point(0, 0, 1))
 
 	# with open('logo.json') as f:
 	# 	logo = json.load(f)
@@ -52,10 +52,20 @@ def generate_base(map):
 				
 
 
-	# for x in [-5, +5]:
-	# 	map.set(Point(x, 0, 0), terrain.id.STONE)
+	for x in [-5, +5]:
+		map.set(Point(x, 0, 0), terrain.id.STONE)
+		map.set(Point(0, x, 0), terrain.id.STONE)
+		map.set(Point(x, x, 0), terrain.id.STONE)
+		map.set(Point(x, -x, 0), terrain.id.STONE)
 
-	# map.set(Point(0, 0, 1), terrain.id.DIRT)
+
+	for x in range(-15, 16):
+		map.set(Point(15, x, 1), terrain.id.DIRT)
+		map.set(Point(-15, x, 1), terrain.id.DIRT)
+		map.set(Point(x, 15, 1), terrain.id.DIRT)
+		map.set(Point(x, -15, 1), terrain.id.DIRT)
+
+	map.set(Point(0, 0, 0), terrain.id.DIRT)
 	# map.set(Point(-2, 2, 1), terrain.id.DIRT)
 	# map.set(Point(-2, 3, 0), terrain.id.DIRT)
 	# map.set(Point(-3, 2, 0), terrain.id.DIRT)

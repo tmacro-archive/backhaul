@@ -22,3 +22,12 @@ class Datastore:
 
 	def items(self):
 		return self._data.items()
+
+
+
+
+class Datastore:
+	def __init__(self, filepath, default_namespace='default'):
+		self._path = filepath
+		self._default_namespace
+

@@ -42,6 +42,7 @@ def smart_range(start, stop, reverse=False):
 	for x in range(diff):
 		yield int(x * direction + start)
 
+
 def center_range(length, center=0):
 	if length == 0:
 		return 0, 0
@@ -64,6 +65,10 @@ def iter_slice(size, center):
 	for x in range(start.x, end.x):
 		for y in range(start.y, end.y):
 			yield Point(x, y, center.z)
+
+# Iterate over the points contained within a a square of map,
+# after it has been isometrically projected 
+# def iter_slice_iso(size, center):
 
 
 def test_cube():

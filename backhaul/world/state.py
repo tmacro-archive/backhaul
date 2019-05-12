@@ -4,7 +4,7 @@ from ..map.storage import MemMap
 from ..map.generate import generate_base
 
 class WorldConfig:
-	map_size = Point(128, 128, 64)
+	map_size = Point(256, 256, 64)
 
 	@classmethod
 	def new(cls):
