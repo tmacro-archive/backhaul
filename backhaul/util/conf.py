@@ -171,6 +171,8 @@ def create_namespace(data, name = 'config'):
 # 	elif _is_iterable(obj)
 # 		return recurse_update(obj, {sections[0]: set_by_path(val, remaining, value)})
 
+YAML_LOADER = partial(yaml.load, Loader=yaml.FullLoader)
+
 # Module level config to control the behavior of configuration loading
 MODULE_CONFIG = {
 	'dump': False, # Writes the default config to disk if no config is found
@@ -184,8 +186,8 @@ MODULE_CONFIG = {
 	# Maps extensions to loaders
 	# loaders should expect a file obj and return a dict
 	'file_loaders': {
-		'.yaml': yaml.load,
-		'.yml': yaml.load,
+		'.yaml': YAML_LOADER,
+		'.yml': YAML_LOADER,
 		'.json': json.load,
 	},
 	'default_loader': yaml.load, # Used for file without extensions
@@ -276,7 +278,6 @@ def build_asset_paths(config):
 
 @patcher
 def load_asset_paths(config):
-	print([p.resolve().as_posix() for p in config['assets'].values()])
 	pyglet.resource.path = [p.resolve().as_posix() for p in config['assets'].values()]
 	pyglet.resource.reindex()
 
@@ -298,7 +299,7 @@ def load_config(modconf):
 		# Iter over our found config files loading each one
 		# Do it in reverse so that our highest priority one gets applies last
 		for filepath in reversed(_FILEPATHS):
-			print('Loading from path %s'%filepath)
+			# print('Loading from path %s'%filepath)
 			conf = recurse_update(
 						conf,
 						load_file(
@@ -317,4 +318,3 @@ def load_config(modconf):
 	return create_namespace(conf)
 
 config = load_config(MODULE_CONFIG)
-print(config)
