@@ -6,6 +6,7 @@ from ...world.state import World, WorldConfig
 from functools import partial
 from ...constants import UIScenes
 from ..components.common import Button
+from ...datastore import BackhaulDatastore
 
 @scene
 class NewGame(Scene):
@@ -32,16 +33,15 @@ class NewGame(Scene):
 
 		return container
 
-
 	@staticmethod
 	def on_new_game(ui, *args):
-		print(args)
 		ui.show_scene(UIScenes.NEWGAME)
 
 	@staticmethod
 	def on_start_game(ui, *args):
+		game = ui.client.create_game('test_game')
 		game_conf = WorldConfig.new()
-		ui.emit('map:create', game_conf)
+		ui.emit('map:create', game, game_conf)
 
 	@staticmethod
 	def on_show(ui):

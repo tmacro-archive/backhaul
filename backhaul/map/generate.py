@@ -12,10 +12,11 @@ def fill_cube(map, size, _terrain, center=None):
 	# if _terrain == terrain.id.STONE:
 	# 	import ipdb 
 	# 	ipdb.set_trace()
-	for point in iter_cube(size, center):
-		# print(point)
-		map.set(point, _terrain)
-
+	tiles = [(p, _terrain) for p in iter_cube(size, center)]
+	map.bulk_set(tiles)
+	# with map.bulk():
+	# 	for point in iter_cube(size, center):
+	# 		map.model.create(x=point.x, y=point.y, z=point.z, terrain_type = _terrain.__terrain_id__)
 
 def generate_base(map):
 	start_x = -map.size.x // 2

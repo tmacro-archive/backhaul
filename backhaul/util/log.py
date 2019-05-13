@@ -75,6 +75,10 @@ def setupLogging(
 		setattr(sys.modules[__name__], 'DEBUG', True)
 		baseLogger.info('Starting %s: version %s'%(name, version))
 	setattr(sys.modules[__name__], 'BASELOGGER', baseLogger)
+
+	peewee_logger = logging.getLogger('peewee')
+	peewee_logger.setLevel(logging.INFO)
+
 	return baseLogger
 
 

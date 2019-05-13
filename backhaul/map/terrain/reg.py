@@ -38,5 +38,4 @@ def add_terrain(cls):
 
 
 def get_terrain(id):
-	print(LOADED_TERRAIN)
 	return LOADED_TERRAIN.get(id)

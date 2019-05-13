@@ -34,3 +34,10 @@ def iter_slice(size, center):
 	for x in range(start.x, end.x):
 		for y in range(start.y, end.y):
 			yield Point(x, y, center.z)
+
+def chunked(iter, chunksize):
+	start = 0
+	while start < len(iter):
+		end = start + chunksize
+		yield iter[start:end]
+		start = end

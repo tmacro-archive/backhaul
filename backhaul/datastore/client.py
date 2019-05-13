@@ -1,5 +1,8 @@
 import peewee
-from playhouse.sqlite_ext import CSqliteExtDatabase
+try:
+    from playhouse.sqlite_ext import CSqliteExtDatabase as SqliteExtDatabase
+except ImportError:
+    from playhouse.sqlite_ext import SqliteExtDatabase
 from .layers import build_layers
 from ..util.conf import config
 from pathlib import PosixPath
@@ -14,7 +17,7 @@ class DatastoreClient:
     @property
     def connection(self):
         if self._connection is None:
-            self._connection = CSqliteExtDatabase(
+            self._connection = SqliteExtDatabase(
                 self._path,
                 pragmas=(
                     ('cache_size', -1024 * 64),  # 64MB page-cache.
@@ -33,13 +36,13 @@ class DatastoreClient:
         return db
 
     @property
-    def _layers(self):
+    def layers(self):
         if self.__layers is None:
             self.__layers = build_layers(self.connection)
         return self.__layers
 
     def _init_datastore(self):
-        for layer in self._layers:
+        for layer in self.layers:
             try:
                 self.connection.create_tables([layer.model], safe=False)
                 layer.on_create()
@@ -47,7 +50,7 @@ class DatastoreClient:
                 pass
 
     def _load_datastore(self):
-        for layer in self._layers:
+        for layer in self.layers:
             layer.on_load()
 
 class BackhaulDatastore:
@@ -58,10 +61,13 @@ class BackhaulDatastore:
         return self._save_dir / name.lower()
 
     def load(self, name):
-        return DatastoreClient(self._get_path(name))
-
+        client = DatastoreClient(self._get_path(name))
+        client.connect()
+        return client
     def delete(self, name):
         pass
 
     def create(self, name):
-        return DatastoreClient(self._get_path(name))
+        client = DatastoreClient(self._get_path(name))
+        client.connect()
+        return client

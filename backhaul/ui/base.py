@@ -12,12 +12,10 @@ class UI(EventEmitter):
 		self.__frame = None
 		self.__stage = None
 		self._initial_scene = initial_scene
-		print(initial_scene.value)
 		self.__scenes = scenes
 
 	def _build_scene(self, scene):
 		handlers = scene.handlers()
-		print(handlers)
 		self.register(**handlers)
 		return scene.build(self)
 
@@ -85,3 +83,6 @@ class UI(EventEmitter):
 		if scene and hasattr(scene, 'on_show'):
 			scene.on_show(self)
 		return self.current_scene
+
+	def set_client(self, client):
+		self.client = client

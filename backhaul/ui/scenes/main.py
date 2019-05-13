@@ -36,7 +36,3 @@ class MainMenu(Scene):
 			container.add(button)
 
 		return container
-
-	@staticmethod
-	def on_show(ui):
-		ui.emit('game:new')

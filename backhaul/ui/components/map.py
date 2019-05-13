@@ -56,7 +56,6 @@ class Map(glooey.Widget):
 	@property
 	def _buffer_size(self):
 		window_size = self.get_window().get_size()
-		print(window_size)
 		half_tile = self.__tile_size // Point(2, 2, 1)
 		wh = Point(*window_size) // half_tile
 		# return Point(11, 11, 10)

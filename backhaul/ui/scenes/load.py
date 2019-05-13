@@ -26,9 +26,9 @@ class Loading(Scene):
 		return container
 
 	@staticmethod
-	def on_map_create(ui, config):
+	def on_map_create(ui, datastore, config):
 		ui.show_scene(UIScenes.LOADING)
-		world = World(config)
+		world = World(datastore, config)
 		world.build('1337H4CK5', cb=ui.lazy_emit('map:finish', world))
 
 	@staticmethod
