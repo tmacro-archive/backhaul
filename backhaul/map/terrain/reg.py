@@ -38,4 +38,4 @@ def add_terrain(cls):
 
 
 def get_terrain(id):
-	return LOADED_TERRAIN.get(id)
+	return LOADED_TERRAIN.get(id, 'foo')

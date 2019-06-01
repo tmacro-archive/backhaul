@@ -121,6 +121,7 @@ class Map(glooey.Widget):
 
 	def _get_from_map(self, position):
 		if self.map is not None:
+			print('fffff')
 			_position = self._tile_offset + position
 			return self.map.get(_position)
 
@@ -156,11 +157,14 @@ class Map(glooey.Widget):
 		# 	import ipdb 
 		# 	ipdb.set_trace()
 		_terrain = self._get_from_map(point)
+		print(_terrain)
 		if not _terrain or _terrain == terrain.id.AIR:
 			return False
 		for name, direction in self._visible_faces.items():
 			tile = self._get_from_map(point + direction.value)
+			print(tile)
 			if tile == terrain.id.AIR:
+				print(point)
 				return True
 
 	def _get_tile_texture(self, position):
@@ -229,7 +233,8 @@ class Map(glooey.Widget):
 		return sprites
 
 	def refresh_sprites(self):
-		self.__sprites = self._build_sprites()
+		if self.__has_changed:
+			self.__sprites = self._build_sprites()
 
 	# Return space needed by widget
 	def do_claim(self):

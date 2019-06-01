@@ -38,12 +38,15 @@ class Terrain(BaseLayer):
     class Layer(BaseLayer.Layer):
         def get(self, position):
             try:
-                return get_terrain(self.model.get(
+                terrain = self.model.get(
                     self.model.x == position.x,
                     self.model.y == position.y,
                     self.model.z == position.z
-                ).terrain_type)
+                ).terrain_type
+                print(terrain)
+                return get_terrain(terrain)
             except self.model.DoesNotExist:
+                print('eeeee')
                 return None
         
         def set(self, position, terrain_type):
@@ -55,15 +58,16 @@ class Terrain(BaseLayer):
                 self.model.create(terrain_type=terrain_type.__terrain_id__, **position._asdict())
         
         def bulk_set(self, items):
-            for chunk in chunked(items, 500):
-                self.model.insert_many(
-                    [{
-                        'x': i[0].x,
-                        'y': i[0].y,
-                        'z': i[0].z,
-                        'terrain_type ':i[1]
-                    } for i in chunk]
-                )
+            with self.client.atomic():
+                for chunk in chunked(items, 500):
+                    self.model.insert_many(
+                        [{
+                            'x': i[0].x,
+                            'y': i[0].y,
+                            'z': i[0].z,
+                            'terrain_type':i[1]
+                        } for i in chunk]
+                    ).execute()
 
         def iter_cube(self, size, center):
             x_range = center_range(size.x, center.x)
@@ -73,4 +77,18 @@ class Terrain(BaseLayer):
                 (self.model.x >= x_range[0]) & (self.model.x < x_range[0]) &
                 (self.model.y >= y_range[0]) & (self.model.y < y_range[0]) &
                 (self.model.z >= z_range[0]) & (self.model.z < z_range[0])
-            ).exectue()
+            ).execute()
+
+        # def iter_cube_screen(self, size, center):
+        #     x_range = center_range(size.x, center.x)
+        #     y_range = center_range(size.y, center.y)
+        #     z_range = center_range(size.z, center.z)
+        #     return self.model.select().where(
+        #         self.model.x.between(*x_range),
+        #         self.model.y.between(*y_range),
+        #         self.model.z.between(*z_range),
+        #     ).order_by(
+        #         self.model.x
+        #         self.model.y
+        #         self.model.z
+        #     )

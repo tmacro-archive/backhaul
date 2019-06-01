@@ -4,7 +4,7 @@ from ..map.generate import generate_base
 from ..map.storage import TerrainMap
 
 class WorldConfig:
-	map_size = Point(256, 256, 64)
+	map_size = Point(1000, 1000, 64)
 
 	@classmethod
 	def new(cls):
@@ -21,7 +21,7 @@ class World:
 		self._items = None
 
 	def _build_map(self, seed):
-		# generate_base(self._world_map)
+		generate_base(self._world_map)
 		pass
 
 	def build(self, seed, cb=None):

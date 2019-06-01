@@ -64,6 +64,7 @@ class BackhaulDatastore:
         client = DatastoreClient(self._get_path(name))
         client.connect()
         return client
+        
     def delete(self, name):
         pass
 

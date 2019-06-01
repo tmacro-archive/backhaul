@@ -26,7 +26,6 @@ def iter_cube(size, center=None):
 			for z in smart_range(*center_range(size.z, center.z)): # Do this because we want to iter top down
 				yield Point(x, y, z)
 
-
 def iter_slice(size, center):
 	half = size // Point(2,2,1)
 	start = half * Point(-1,-1,1) + center
