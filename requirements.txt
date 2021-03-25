@@ -8,6 +8,6 @@ msgpack==0.6.1
 peewee==3.9.5
 Pillow==5.4.1
 pyglet==1.4.0b1
-PyYAML==5.1
+PyYAML==5.4
 six==1.12.0
 vecrec==0.3.0
